@@ -29,3 +29,4 @@ app.post("/crash", (req, res) => {
   setTimeout(() => process.exit(1), 100);
 });
 app.listen(PORT, () => console.log(`Notification service running on port ${PORT}`));
+// test
