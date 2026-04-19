@@ -26,6 +26,7 @@ export default function Dashboard() {
     const [activity, setActivity] = useState<ActivityItem[]>([]);
     const wsRef = useRef<WebSocket | null>(null);
     const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+    const mountedRef = useRef(true);
 
     const loadStats = async () => {
         try {
@@ -76,7 +77,7 @@ export default function Dashboard() {
     };
 
     const connect = () => {
-        wsRef.current?.close();
+        console.log("connecting.")
         const ws = createWebSocketConnection(
             handleMessage,
             () => {
@@ -85,18 +86,22 @@ export default function Dashboard() {
             },
             () => {
                 setConnected(false);
-                retryRef.current = setTimeout(connect, 3000);
+                if (mountedRef.current) {
+                    retryRef.current = setTimeout(connect, 3000);
+                }
             }
         );
         wsRef.current = ws;
     };
 
     useEffect(() => {
+        mountedRef.current = true;
         loadStats();
         connect();
         return () => {
-            wsRef.current?.close();
+            mountedRef.current = false;
             if (retryRef.current) clearTimeout(retryRef.current);
+            wsRef.current?.close();
         };
     }, []);
 
