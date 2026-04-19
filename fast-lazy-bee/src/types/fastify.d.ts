@@ -26,5 +26,6 @@ declare module 'fastify' {
     config: EnvSchemaType;
     mongo: FastifyMongoObject & FastifyMongoNestedObject;
     dataStore: DataStore;
+    publishMovieEvent: (movieId: string, movieTitle: string) => Promise<void>;
   }
 }

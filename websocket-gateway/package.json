@@ -1,0 +1,13 @@
+{
+  "name": "websocket-gateway",
+  "version": "1.0.0",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js"
+  },
+  "dependencies": {
+    "express": "^4.21.0",
+    "ws": "^8.18.0",
+    "@google-cloud/firestore": "^7.11.0"
+  }
+}

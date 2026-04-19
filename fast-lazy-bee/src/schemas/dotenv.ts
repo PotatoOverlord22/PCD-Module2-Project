@@ -6,7 +6,9 @@ const EnvSchema = Type.Object({
   APP_PORT: Type.Number({ default: CONFIG_DEFAULTS.PORT }),
   MONGO_IMAGE: Type.String({ default: CONFIG_DEFAULTS.MONGO_IMAGE }),
   MONGO_URL: Type.String({ default: CONFIG_DEFAULTS.MONGO_URL }),
-  MONGO_DB_NAME: Type.String({ default: CONFIG_DEFAULTS.MONGO_DB_NAME })
+  MONGO_DB_NAME: Type.String({ default: CONFIG_DEFAULTS.MONGO_DB_NAME }),
+  GOOGLE_CLOUD_PROJECT: Type.String({ default: CONFIG_DEFAULTS.GOOGLE_CLOUD_PROJECT }),
+  PUBSUB_TOPIC: Type.String({ default: CONFIG_DEFAULTS.PUBSUB_TOPIC })
 });
 
 type EnvSchemaType = Static<typeof EnvSchema>;

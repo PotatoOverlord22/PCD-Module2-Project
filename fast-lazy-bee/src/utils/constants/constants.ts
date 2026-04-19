@@ -8,7 +8,9 @@ const CONFIG_DEFAULTS = {
   MONGO_PORT: 27027,
   MONGO_DB_NAME: 'sample_mflix',
   MONGO_URL: 'mongodb://localhost:27027/sample_mflix',
-  CACHE_EXPIRATION_S: 10
+  CACHE_EXPIRATION_S: 10,
+  GOOGLE_CLOUD_PROJECT: '',
+  PUBSUB_TOPIC: 'movie-events'
 } as const;
 
 const PAGINATION = {
