@@ -1,9 +1,11 @@
 const express = require('express');
+const cors = require('cors');
 const http = require('http');
 const { WebSocketServer } = require('ws');
 const { Firestore } = require('@google-cloud/firestore');
 
 const app = express();
+app.use(cors());
 app.use(express.json());
 
 const PORT = process.env.PORT || 8080;
