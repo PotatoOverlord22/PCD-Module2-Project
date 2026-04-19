@@ -19,11 +19,28 @@ const wss = new WebSocketServer({ server });
 
 const connectedClients = new Set();
 
-wss.on('connection', (ws) => {
+wss.on('connection', async (ws) => {
   connectedClients.add(ws);
 
-  ws.on('close', () => connectedClients.delete(ws));
-  ws.on('error', () => connectedClients.delete(ws));
+  try {
+    const snapshot = await statsCollection.orderBy('viewCount', 'desc').limit(20).get();
+    const stats = [];
+    snapshot.forEach((doc) => stats.push({ id: doc.id, ...doc.data() }));
+    ws.send(JSON.stringify({ type: 'initial_stats', stats, connectedClients: connectedClients.size }));
+  } catch (err) {
+    console.error(JSON.stringify({ msg: 'Failed to send initial stats', error: err.message }));
+  }
+
+  broadcast({ type: 'client_count', connectedClients: connectedClients.size });
+
+  ws.on('close', () => {
+    connectedClients.delete(ws);
+    broadcast({ type: 'client_count', connectedClients: connectedClients.size });
+  });
+
+  ws.on('error', () => {
+    connectedClients.delete(ws);
+  });
 });
 
 function broadcast(payload) {

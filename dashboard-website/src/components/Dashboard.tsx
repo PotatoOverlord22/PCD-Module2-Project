@@ -9,7 +9,8 @@ import ConnectionStatus from "./ConnectionStatus";
 import TopMoviesChart from "./TopMoviesChart";
 import TopMoviesTable from "./TopMoviesTable";
 import RecentActivity from "./RecentActivity";
-import { fetchStats, createWebSocketConnection } from "../api/gatewayClient";
+import { createWebSocketConnection } from "../api/gatewayClient";
+import { WebSocketMessageType } from "../model/analytics";
 import type { MovieStat, WebSocketMessage } from "../model/analytics";
 
 interface ActivityItem {
@@ -28,62 +29,55 @@ export default function Dashboard() {
     const retryRef = useRef<ReturnType<typeof setTimeout> | null>(null);
     const mountedRef = useRef(true);
 
-    const loadStats = async () => {
-        try {
-            const data = await fetchStats();
-            setTopMovies(data.stats);
-            setConnectedClients(data.connectedClients);
-        } catch (_) {}
-    };
-
     const handleMessage = (msg: WebSocketMessage) => {
-        if (msg.type !== "movie_viewed") return;
+        switch (msg.type) {
+            case WebSocketMessageType.InitialStats:
+                setTopMovies(msg.stats);
+                setConnectedClients(msg.connectedClients);
+                break;
 
-        if (msg.connectedClients !== undefined) {
-            setConnectedClients(msg.connectedClients);
-        }
+            case WebSocketMessageType.ClientCount:
+                setConnectedClients(msg.connectedClients);
+                break;
 
-        if (msg.movieId && msg.movieTitle && msg.viewCount !== undefined && msg.timestamp) {
-            setActivity((prev) =>
-                [
-                    {
-                        movieId: msg.movieId!,
-                        movieTitle: msg.movieTitle!,
-                        viewCount: msg.viewCount!,
-                        timestamp: msg.timestamp!,
-                    },
-                    ...prev,
-                ].slice(0, 20)
-            );
-
-            setTopMovies((prev) => {
-                const exists = prev.find((m) => m.id === msg.movieId);
-                const updated = exists
-                    ? prev.map((m) =>
-                          m.id === msg.movieId ? { ...m, viewCount: msg.viewCount!, lastViewed: msg.timestamp! } : m
-                      )
-                    : [
-                          ...prev,
-                          {
-                              id: msg.movieId!,
-                              movieTitle: msg.movieTitle!,
-                              viewCount: msg.viewCount!,
-                              lastViewed: msg.timestamp!,
-                          },
-                      ];
-                return updated.sort((a, b) => b.viewCount - a.viewCount).slice(0, 20);
-            });
+            case WebSocketMessageType.MovieViewed:
+                setConnectedClients(msg.connectedClients);
+                setActivity((prev) =>
+                    [
+                        {
+                            movieId: msg.movieId,
+                            movieTitle: msg.movieTitle,
+                            viewCount: msg.viewCount,
+                            timestamp: msg.timestamp,
+                        },
+                        ...prev,
+                    ].slice(0, 20)
+                );
+                setTopMovies((prev) => {
+                    const exists = prev.find((m) => m.id === msg.movieId);
+                    const updated = exists
+                        ? prev.map((m) =>
+                              m.id === msg.movieId ? { ...m, viewCount: msg.viewCount, lastViewed: msg.timestamp } : m
+                          )
+                        : [
+                              ...prev,
+                              {
+                                  id: msg.movieId,
+                                  movieTitle: msg.movieTitle,
+                                  viewCount: msg.viewCount,
+                                  lastViewed: msg.timestamp,
+                              },
+                          ];
+                    return updated.sort((a, b) => b.viewCount - a.viewCount).slice(0, 20);
+                });
+                break;
         }
     };
 
     const connect = () => {
-        console.log("connecting.")
         const ws = createWebSocketConnection(
             handleMessage,
-            () => {
-                setConnected(true);
-                loadStats();
-            },
+            () => setConnected(true),
             () => {
                 setConnected(false);
                 if (mountedRef.current) {
@@ -96,7 +90,6 @@ export default function Dashboard() {
 
     useEffect(() => {
         mountedRef.current = true;
-        loadStats();
         connect();
         return () => {
             mountedRef.current = false;
