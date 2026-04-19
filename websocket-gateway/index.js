@@ -13,6 +13,7 @@ const PROJECT_ID = process.env.GOOGLE_CLOUD_PROJECT;
 
 const firestore = new Firestore({ projectId: PROJECT_ID });
 const statsCollection = firestore.collection('movie-stats');
+const recentActivityRef = firestore.doc('recent-activity/latest');
 
 const server = http.createServer(app);
 const wss = new WebSocketServer({ server });
@@ -23,10 +24,14 @@ wss.on('connection', async (ws) => {
   connectedClients.add(ws);
 
   try {
-    const snapshot = await statsCollection.orderBy('viewCount', 'desc').limit(20).get();
+    const [snapshot, activityDoc] = await Promise.all([
+      statsCollection.orderBy('viewCount', 'desc').limit(20).get(),
+      recentActivityRef.get()
+    ]);
     const stats = [];
     snapshot.forEach((doc) => stats.push({ id: doc.id, ...doc.data() }));
-    ws.send(JSON.stringify({ type: 'initial_stats', stats, connectedClients: connectedClients.size }));
+    const recentActivity = activityDoc.exists ? activityDoc.data().activities || [] : [];
+    ws.send(JSON.stringify({ type: 'initial_stats', stats, recentActivity, connectedClients: connectedClients.size }));
   } catch (err) {
     console.error(JSON.stringify({ msg: 'Failed to send initial stats', error: err.message }));
   }

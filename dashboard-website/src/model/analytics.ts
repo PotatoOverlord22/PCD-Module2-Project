@@ -35,6 +35,14 @@ export const WebSocketMessageSchema = z.discriminatedUnion("type", [
     z.object({
         type: z.literal("initial_stats"),
         stats: z.array(MovieStatSchema),
+        recentActivity: z.array(
+            z.object({
+                movieId: z.string(),
+                movieTitle: z.string(),
+                viewCount: z.number(),
+                timestamp: z.string(),
+            })
+        ),
         connectedClients: z.number(),
     }),
     z.object({

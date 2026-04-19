@@ -7,6 +7,9 @@ const WEBSOCKET_GATEWAY_URL = process.env.WEBSOCKET_GATEWAY_URL || '';
 const firestore = new Firestore({ projectId: PROJECT_ID });
 const statsCollection = firestore.collection('movie-stats');
 const processedCollection = firestore.collection('processed-messages');
+const recentActivityRef = firestore.doc('recent-activity/latest');
+
+const MAX_RECENT_ACTIVITIES = 15;
 
 async function processEvent(messageId, data) {
   const processedDoc = await processedCollection.doc(messageId).get();
@@ -47,6 +50,17 @@ async function processEvent(messageId, data) {
   return { status: 'processed', viewCount: newViewCount };
 }
 
+async function addRecentActivity(data, viewCount) {
+  const timestamp = new Date().toISOString();
+  await firestore.runTransaction(async (tx) => {
+    const doc = await tx.get(recentActivityRef);
+    const activities = doc.exists ? doc.data().activities || [] : [];
+    activities.unshift({ movieId: data.movieId, movieTitle: data.movieTitle || 'Unknown', viewCount, timestamp });
+    tx.set(recentActivityRef, { activities: activities.slice(0, MAX_RECENT_ACTIVITIES) });
+  });
+  console.log(JSON.stringify({ msg: 'Recent activity updated', movieId: data.movieId }));
+}
+
 async function notifyGateway(data, viewCount) {
   if (!WEBSOCKET_GATEWAY_URL) return;
 
@@ -83,6 +97,9 @@ functions.cloudEvent('processMovieEvent', async (cloudEvent) => {
   const result = await processEvent(messageId, data);
 
   if (result.status === 'processed') {
-    await notifyGateway(data, result.viewCount);
+    await Promise.all([
+      addRecentActivity(data, result.viewCount),
+      notifyGateway(data, result.viewCount),
+    ]);
   }
 });

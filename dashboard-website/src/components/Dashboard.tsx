@@ -33,6 +33,7 @@ export default function Dashboard() {
         switch (msg.type) {
             case WebSocketMessageType.InitialStats:
                 setTopMovies(msg.stats);
+                setActivity(msg.recentActivity);
                 setConnectedClients(msg.connectedClients);
                 break;
 
