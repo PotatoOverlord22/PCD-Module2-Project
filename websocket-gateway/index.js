@@ -102,6 +102,12 @@ app.get('/health', (req, res) => {
   res.json({ status: 'ok', service: 'websocket-gateway', connectedClients: connectedClients.size });
 });
 
+app.post('/crash', (req, res) => {
+  console.log(JSON.stringify({ msg: 'Crash endpoint triggered' }));
+  res.json({ status: 'crashing' });
+  setTimeout(() => process.exit(1), 100);
+});
+
 server.listen(PORT, () => {
   console.log(JSON.stringify({ msg: `WebSocket Gateway running on port ${PORT}` }));
 });
