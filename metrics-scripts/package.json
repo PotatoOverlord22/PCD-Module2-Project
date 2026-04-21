@@ -1,0 +1,12 @@
+{
+  "name": "metrics-scripts",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "e2e-latency": "node e2e-latency.js",
+    "consistency-window": "node consistency-window.js"
+  },
+  "dependencies": {
+    "ws": "^8.18.0"
+  }
+}
