@@ -1,0 +1,25 @@
+graph TD
+    subgraph Client
+        Browser[Dashboard Website]
+    end
+
+    subgraph GCP [Google Cloud Platform]
+        FLB[Fast Lazy Bee\nCloud Run]
+        PS[(Pub/Sub)]
+        EP[event-processor\nCloud Function]
+        GW[websocket-gateway\nCloud Run]
+        FS[(Firestore)]
+    end
+
+    subgraph External
+        MDB[(MongoDB Atlas)]
+    end
+
+    Browser -->|HTTP REST| FLB
+    Browser <-->|WebSocket| GW
+    FLB --> MDB
+    FLB -->|publish event| PS
+    PS -->|trigger| EP
+    EP --> FS
+    EP -->|POST /notify| GW
+    GW --> FS

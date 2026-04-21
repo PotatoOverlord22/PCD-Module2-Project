@@ -1,5 +1,7 @@
 # PCD Module 2 – Distributed Analytics Dashboard
 
+**Scientific Report:** [documentation/report.pdf](documentation/report.pdf)
+
 Real-time analytics dashboard built on Google Cloud Platform. When a movie is accessed via the Fast Lazy Bee API, an event flows through Pub/Sub to a Cloud Function that persists stats and recent activity to Firestore, then notifies a WebSocket Gateway which pushes live updates to the dashboard.
 
 ## Services
@@ -260,3 +262,42 @@ firebase hosting:disable
 # Delete Firestore collections (via Google Cloud Console)
 # Console → Firestore → select collections (movie-stats, processed-messages, recent-activity) → Delete
 ```
+
+---
+
+## Generating the Report PDF
+
+The scientific report is written in Markdown (`documentation/report.md`) and converted to PDF using [Pandoc](https://pandoc.org/) with the [Eisvogel](https://github.com/Wandmalfarbe/pandoc-latex-template) template.
+
+**Prerequisites:**
+
+```bash
+# Install Pandoc
+brew install pandoc
+
+# Install BasicTeX (LaTeX engine)
+brew install --cask basictex
+eval "$(/usr/libexec/path_helper)"
+
+# Install required LaTeX packages
+sudo tlmgr install adjustbox collectbox ucs csquotes footnotebackref ly1 mdframed \
+  mweights needspace pagecolor sourcecodepro titling zref selnolig hardwrap background everypage
+
+# Install Eisvogel template
+mkdir -p ~/.pandoc/templates
+curl -L https://github.com/Wandmalfarbe/pandoc-latex-template/releases/latest/download/Eisvogel.tar.gz -o /tmp/eisvogel.tar.gz
+tar xzf /tmp/eisvogel.tar.gz -C ~/.pandoc/templates
+cp ~/.pandoc/templates/Eisvogel-*/eisvogel.latex ~/.pandoc/templates/eisvogel.latex
+```
+
+**Generate PDF:**
+
+```bash
+cd documentation
+pandoc report.md --template eisvogel \
+  -V linkcolor=blue -V colorlinks=true -V geometry:margin=2.5cm -V fontsize=11pt \
+  --pdf-engine=xelatex \
+  -V mainfont="Helvetica" -V sansfont="Helvetica" -V monofont="Courier New" \
+  -o report.pdf
+```
+

@@ -1,0 +1,17 @@
+sequenceDiagram
+    participant Client as Browser
+    participant FLB as Fast Lazy Bee
+    participant PS as Pub/Sub
+    participant EP as event-processor
+    participant FS as Firestore
+    participant GW as websocket-gateway
+
+    Client->>FLB: GET /api/v1/movies/:id
+    FLB-->>Client: 200 OK (movie data)
+    FLB-)PS: publish movie_viewed event
+
+    PS-)EP: trigger
+    EP->>FS: upsert viewCount
+    EP->>FS: update recent activity
+    EP->>GW: POST /notify
+    GW-)Client: WebSocket broadcast

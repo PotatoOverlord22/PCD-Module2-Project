@@ -1,0 +1,9 @@
+sequenceDiagram
+    participant Client as Browser
+    participant FLB as Fast Lazy Bee
+    participant MDB as MongoDB Atlas
+
+    Client->>FLB: GET /api/v1/movies/:id
+    FLB->>MDB: find movie by id
+    MDB-->>FLB: movie document
+    FLB-->>Client: 200 OK (movie data)
