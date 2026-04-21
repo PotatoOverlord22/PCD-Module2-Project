@@ -191,3 +191,59 @@ firebase hosting:disable
 # Delete Firestore collections (via Google Cloud Console)
 # Console → Firestore → select collections (movie-stats, processed-messages, recent-activity) → Delete
 ```
+
+---
+
+## Metrics Collection
+
+Performance and reliability tests are located in `metrics-scripts/`. Prerequisites: Node.js v20+, `python3`, `hey` (`brew install hey`), `jq`.
+
+```bash
+cd metrics-scripts
+npm install
+```
+
+### Warm vs Cold setup
+
+Before running tests, configure all services to the desired state:
+
+```bash
+# Cold — all services scale to 0 (wait 10-15 min after running)
+./set-cold.sh
+
+# Warm — all services keep at least 1 instance alive (wait ~30s after running)
+./set-warm.sh
+```
+
+### End-to-End Latency
+
+Measures the time from `GET /movies/:id` on Fast Lazy Bee until the `movie_viewed` WebSocket message arrives at the client. Runs 20 times and reports p50, p95, p99.
+
+```bash
+node e2e-latency.js
+```
+
+### Eventual Consistency Window
+
+Measures the time from `GET /movies/:id` until the view count is updated in Firestore, polled via the gateway `/stats/:movieId` endpoint every 500ms. Runs 10 times and reports p50, p95, p99.
+
+```bash
+node consistency-window.js
+```
+
+### Cloud Function Throughput
+
+Uses `hey` to send load at concurrency 10, 50, and 100 against the Fast Lazy Bee movie endpoint. After each run, waits 30s then checks how many Pub/Sub events were processed by the Cloud Function.
+
+```bash
+./throughput-test.sh
+```
+
+### WebSocket Reconnection
+
+Crashes the gateway via the `/crash` endpoint and measures how long Cloud Run takes to bring a new instance up, polling `/health` every second. Runs 3 times and reports average recovery time. You can also observe the webscoket clients being disconnected by opening up the dashboard website and looking at the top right "Online/offline" status while running this test.
+
+```bash
+./websocket-reconnect.sh
+```
+
