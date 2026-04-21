@@ -15,7 +15,7 @@ const FAST_LAZY_BEE = 'https://fast-lazy-bee-811910590920.us-central1.run.app';
 const MOVIE_ID = '573a139cf29313caabcf560f'; // "The Kiss"
 const RUNS = 20;
 const DELAY_BETWEEN_RUNS_MS = 2000;
-const TIMEOUT_MS = 15000;
+const TIMEOUT_MS = 90000;
 
 async function measureOnce() {
   return new Promise((resolve, reject) => {

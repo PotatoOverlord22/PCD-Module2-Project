@@ -14,7 +14,7 @@ const GATEWAY_HTTP = 'https://websocket-gateway-811910590920.us-central1.run.app
 const MOVIE_ID = '573a139cf29313caabcf560f'; // "The Kiss"
 const RUNS = 10;
 const POLL_INTERVAL_MS = 500;
-const MAX_WAIT_MS = 20000;
+const MAX_WAIT_MS = 90000;
 
 async function getViewCount() {
   const res = await fetch(`${GATEWAY_HTTP}/stats/${MOVIE_ID}`);
