@@ -1,5 +1,7 @@
 # PCD Module 2 – Distributed Analytics Dashboard
 
+**Team members:** Raul Tiron (PotatoOverlord22), Teodora Vlad (TeodoraVlad12)
+
 **Scientific Report:** [documentation/report.pdf](documentation/report.pdf)
 
 Real-time analytics dashboard built on Google Cloud Platform. When a movie is accessed via the Fast Lazy Bee API, an event flows through Pub/Sub to a Cloud Function that persists stats and recent activity to Firestore, then notifies a WebSocket Gateway which pushes live updates to the dashboard.
